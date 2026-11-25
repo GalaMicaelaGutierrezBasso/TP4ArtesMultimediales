@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La ciudad como escenario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e6ebe7;--card:#f8f9f6;--ink:#17201c;--mut:#56645c;--acc:#1f6b45;--line:#c3ccc5;--tag:#f4d21f;--tagink:#17201c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111815;--card:#1a231f;--ink:#e8eee9;--mut:#9aa8a0;--acc:#6fcf9b;--line:#33403a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111815;--card:#1a231f;--ink:#e8eee9;--mut:#9aa8a0;--acc:#6fcf9b;--line:#33403a;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 "Bricolage Grotesque",system-ui,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:28px 18px 48px;display:grid;gap:28px;grid-template-columns:minmax(0,1fr) 300px;align-items:start}
+@media (max-width:760px){.wrap{grid-template-columns:minmax(0,1fr)}}
+h1{font-weight:800;font-size:clamp(30px,6vw,46px);line-height:1.05;margin:0 0 14px;letter-spacing:-.02em}
+.sub{color:var(--mut);margin:0 0 22px}
+.scene{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:22px 22px 24px}
+.scene h2{font-size:26px;line-height:1.15;margin:0 0 10px;font-weight:800}
+.scene p{margin:0 0 14px;max-width:62ch}
+.opts{display:grid;gap:10px;margin:16px 0}
+.opt{font:inherit;text-align:left;background:transparent;color:var(--ink);border:1.5px solid var(--ink);border-radius:4px;padding:11px 14px;cursor:pointer;transition:background .15s,transform .15s}
+.opt:hover:not(:disabled){background:var(--tag);color:var(--tagink);border-color:var(--tagink)}
+.opt:disabled{border-style:dashed;border-color:var(--line);color:var(--mut);cursor:default}
+.opt:focus-visible,.go:focus-visible,a:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.log p{border-left:3px solid var(--acc);padding-left:12px;color:var(--mut);margin:0 0 8px}
+.go{font:600 17px/1 inherit;background:var(--ink);color:var(--card);border:0;border-radius:4px;padding:14px 20px;cursor:pointer;margin-top:8px}
+.go:disabled{opacity:.35;cursor:not-allowed}
+.quote{font-style:italic;font-size:22px;color:var(--acc);margin:6px 0 10px}
+.note{font-size:15px;color:var(--mut);border-top:1px dashed var(--line);padding-top:12px;margin-top:16px}
+.end a{color:var(--acc);font-weight:600}
+.end ul{padding-left:20px;margin:8px 0}
+aside{position:sticky;top:16px}
+@media (max-width:760px){aside{position:static}}
+.ticket{background:var(--card);border:1px solid var(--line);border-top:0;font:400 13.5px/1.5 "Space Mono",ui-monospace,monospace;padding:18px 16px 22px;
+background-image:linear-gradient(135deg,var(--bg) 25%,transparent 25%),linear-gradient(225deg,var(--bg) 25%,transparent 25%);background-size:14px 14px;background-position:0 0;background-repeat:repeat-x}
+.ticket .in{padding-top:12px}
+.ticket h3{font:700 14px/1.3 inherit;margin:0 0 2px;text-align:center}
+.ticket .c{text-align:center;color:var(--mut);margin:0 0 10px;font-size:12px}
+.ln{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding:3px 0}
+.ln span:first-child{overflow-wrap:anywhere}
+.ln.new{animation:in .4s}
+@keyframes in{from{background:var(--tag);color:var(--tagink)}to{background:transparent}}
+.tot{display:flex;justify-content:space-between;font-weight:700;margin-top:10px;font-size:15px}
+.empty{color:var(--mut);text-align:center;margin:10px 0}
+@media (prefers-reduced-motion:reduce){.ln.new{animation:none}.opt{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+<h1>¿Necesidad o Consumo?</h1>
+<p class="sub">Una caminata interactiva basada en el TP3 de La ciudad como escenario. Artes Multimediales 1, cátedra Groisman, 2026.</p>
+<p class="sub">Gutiérrez Basso, Gala Micaela.</p>
+<section class="scene" id="scene" aria-live="polite"></section>
+</main>
+<aside>
+<div class="ticket" aria-label="Ticket del recorrido"><div class="in">
+<h3>TICKET DEL RECORRIDO</h3>
+<p class="c">depende de vos, tu alrededor y tus experiencias.</p>
+<div id="lines"></div>
+<div class="tot"><span>TOTAL</span><span id="tot">$ 0,00</span></div>
+</div></div>
+</aside>
+</div>
+<script>
+var $=function(s){return document.querySelector(s)};
+var S=[
+{t:'Salir desde donde más te guste',p:'Salís a conocer un barrio nuevo o no por donde te moves usalmente. No tenes apuro ni destino fijo. El algoritmo es simple: fijas un lugar de consumo cualquiera solo para seguir uno de los caminos que te proponga el mapa a partir de que salís, seguís un camino de los propuestos y documentas los envoltorios, botellas, paquetes, cajas, etc., que encontras, y también un poco del recorrido. Vos decidís hacia dónde mirar.',items:[],need:0,btn:'Salir a caminar'},
+{t:'El parque',p:'Llegas a un parque con actividades culturales y mucha naturaleza. Es la primera vez que estás ahí. ¿Qué haces primero? Elegí al menos una cosa.',items:[['Escuchas a la banda que toca','Te detenes un rato. Nadie te está vendiendo nada.'],['Visitas el pequeño museo','Entras, miras, salis con la cabeza llena de cosas.'],['Te acostas a tomar sol','Cerras los ojos. Por ahora la tarde es toda tuya.']],need:1,btn:'Derivar por las calles'},
+{t:'Es un lugar lleno de calles extrañas',p:'Caminas sin apuro, sin querer llegar a ningún lado. Pero la calle habla igual. Documentá lo que ves, con foto o video. Elegí al menos dos.',items:[['Envoltorios de golosinas','Los tiraron unos chicos al salir de la escuela.','Envoltorio de golosina',0],['Cajas de una compra online','De alguna familia. Cartón con logo.','Caja de compra online',0],['Colillas de cigarrillos','De un grupo de amigos disfrutando de la noche.','Colillas',0],['Botellas y paquetes vacíos','Se acumulan en la esquina.','Botella vacía',0]],need:2,quote:'“A mí esto no me afecta.”',btn:'Seguir hasta la avenida'},
+{t:'Seguis caminando',p:'Elegí una opcion.',items:[['A la derecha','Seguis dos cuadras por ahi. Hay una pareja caminando de la mano. Un chico paseando a su perro. Te hace sonreir y pensar en tus amigxs.'],['A la izquierda','Seguis tres cuadras por ahi. Ves tres nenes jugando al futbol. Hay una verduleria sin mucha gente. Te acordas de tu infancia.'],['Seguis derecho','Hay un olor a asado. Te acordas de los domingos y la familia.']],need:1,btn:'Seguir'},
+{t:'Llegas a la avenida',p:'Después de unas cuadras llegas a una avenida y esperas el semáforo. ¿Hacia dónde miras?',items:[['Al frente, esperando que cambie la luz','Te pones a mirar a tu alrededor igual. Lo ves.'],['A la derecha','Esuchas un ruido a la izquierda y Lo ves.'], ['A la izquierda','Lo ves.']],need:1,p:'Lo que ves es:',quote:'Un supermercado.',btn:'Cruzar'},
+{t:'El supermercado',p:'No pensabas comprar. Tal vez solo mirar las ofertas. No fue stu elección, al menos no una consciente. Entre un pasillo y otro te ves con productos en las manos. Elegí qué agarras.',items:[['Pasillo de congelados','Una pizza. “Ya que estoy acá.”','Pizza congelada',1850],['Pasillo de dulces','Alfajores. “Para tener en la semana.”','Alfajores x6',2400],['Góndola de ofertas','2x1. Sería tonto no llevarlo.','Gaseosa 2x1',2100],['Snacks junto a la caja','Los dejan justo a la altura de la mano.','Papas fritas',1300]],need:1,btn:'Ir a la caja'},
+{t:'En la caja',p:'Te pones en la fila, esperas tu turno, vas a la caja que te asignan, te escanean los productos, pagas y se vas. ¿Cómo lo justificas?',items:[['“Ya que estaba acá.”','Te lo decis a vos misma, y casi te lo crees.'],['“Es para tener en la semana.”','No voy a tener tiempo despues.'],['“Solo iba a mirar.”','Siempre te pasa lo mismo.']],need:1,btn:'Pagar y salir',note:'Nota de la autora: no por no creerle, pero no llevaba muchas cosas necesarias para subsistir en su día a día.'},
+{t:'Una misma acción',fin:true,p:'No es que no vieras el paisaje, ni a las personas, ni el lugar. Pero todo te llevó, como siempre, a una misma acción. Mientras volves a casa aparece algo más.',items:[['Documentar la bolsa de basura del supermercado','Está tirada en la vereda. También es parte del proceso.','Bolsa de basura del súper',0]],need:0,btn:'Volver a empezar'}
+];
+var i=0,done={},tk=[];
+function money(n){return '$ '+n.toLocaleString('es-AR',{minimumFractionDigits:2})}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e}
+function ticket(newName){
+  var L=$('#lines');L.innerHTML='';
+  if(!tk.length){L.appendChild(el('p','empty','Todavía no hay nada anotado.'))}
+  var sum=0;
+  tk.forEach(function(r){
+    sum+=r.p;
+    var d=el('div','ln'+(r.n===newName?' new':''));
+    d.appendChild(el('span','',r.n));
+    d.appendChild(el('span','',r.p?money(r.p):'0,00'));
+    L.appendChild(d);
+  });
+  $('#tot').textContent=money(sum);
+}
+function draw(){
+  var s=S[i],box=$('#scene');box.innerHTML='';done={};var n=0;
+  box.appendChild(el('h2','',s.t));
+  box.appendChild(el('p','',s.p));
+  if(s.quote)box.appendChild(el('p','quote',s.quote));
+  var opts=el('div','opts'),log=el('div','log'),go=el('button','go',s.btn);
+  go.disabled=s.need>0;
+  s.items.forEach(function(it,k){
+    var b=el('button','opt',it[0]);
+    b.onclick=function(){
+      if(done[k])return;done[k]=1;n++;b.disabled=true;
+      log.appendChild(el('p','',it[1]));
+      if(it[2]){tk.push({n:it[2],p:it[3]});ticket(it[2])}
+      if(n>=s.need)go.disabled=false;
+    };
+    opts.appendChild(b);
+  });
+  box.appendChild(opts);box.appendChild(log);
+  if(s.fin){
+    var cal=tk.filter(function(r){return r.p===0}).length,buy=tk.filter(function(r){return r.p>0}).length;
+    var e=el('div','end');
+    e.appendChild(el('p','','Documentaste '+cal+' cosas de la calle, aunque dijiste que no te afectaban. Terminaste con '+buy+(buy===1?' producto':' productos')+' que no estaban en el plan. Todos los caminos que proponía el mapa llegaban a los mismo: CONSUMO.'));
+    var u=el('ul');
+    [['Entrega final del TP3','https://galaxia007.blogspot.com/2026/10/tp-n-3-la-ciudad-como-escenario_01898454563.html'],['Video del TP3','https://youtu.be/id_TWMxOSjo']].forEach(function(l){
+      var li=el('li'),a=el('a','',l[0]);a.href=l[1];a.target='_blank';a.rel='noopener';li.appendChild(a);u.appendChild(li);
+    });
+    e.appendChild(u);box.appendChild(e);
+  }
+  if(s.note)box.appendChild(el('p','note',s.note));
+  go.onclick=function(){
+    if(s.fin){tk=[];i=0}else{i++}
+    ticket();draw();window.scrollTo({top:0,behavior:'smooth'});
+  };
+  box.appendChild(go);
+}
+ticket();draw();
+</script>
+</body>
+</html>
